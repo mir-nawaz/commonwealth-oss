@@ -295,7 +295,7 @@ const instantiateEditor = (
       key: ' ',
       collapsed: true,
       format: { list: false },
-      prefix: /^\s*(1{1,1}\.|\*|-)$/,
+      prefix: /^\s*(1{1,1}\.|\*|-|\[x?\]|)$/,
       handler: (range, context) => {
         if (isMarkdownMode()) return true;
         const length = context.prefix.length;
@@ -307,6 +307,12 @@ const instantiateEditor = (
           case '-':
           case '*':
             value = 'bullet';
+            break;
+          case '[]':
+            value = 'unchecked';
+            break;
+          case '[x]':
+            value = 'checked';
             break;
           default:
             value = 'ordered';
