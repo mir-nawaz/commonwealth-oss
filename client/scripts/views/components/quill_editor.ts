@@ -537,7 +537,7 @@ const instantiateEditor = (
     modules: {
       toolbar: hasFormats ? ([[{ header: 1 }, { header: 2 }]] as any).concat([
         ['bold', 'italic', 'strike', 'code-block'],
-        [{ list: 'ordered' }, { list: 'bullet' }, 'blockquote', 'link', 'image'],
+        [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }, 'blockquote', 'link', 'image'],
         ['preview'],
       ]) : false,
       imageDropAndPaste: {
@@ -659,7 +659,8 @@ const instantiateEditor = (
   };
   makeMarkdownToolbarHandler('header', { 1: '# ', 2: '## ' });
   makeMarkdownToolbarHandler('blockquote', '> ');
-  makeMarkdownToolbarHandler('list', { ordered: ((index) => `${index + 1}. `), bullet: '- ' });
+  // Todo: look into [x] vs [ ]
+  makeMarkdownToolbarHandler('list', { ordered: ((index) => `${index + 1}. `), bullet: '- ', check: '[ ]' });
 
   // Set up remaining couple of Markdown toolbar options
   const defaultLinkHandler = quill.theme.modules.toolbar.handlers.link;

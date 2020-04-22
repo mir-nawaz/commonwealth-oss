@@ -9551,7 +9551,7 @@ Toolbar.DEFAULTS = {
       var formats = this.quill.getFormat(range);
       if (value === 'check') {
         if (formats['list'] === 'checked' || formats['list'] === 'unchecked') {
-          this.quill.format('list', false, _quill2.default.sources.USER);
+          this.quill.format('list', value, _quill2.default.sources.USER);
         } else {
           this.quill.format('list', 'unchecked', _quill2.default.sources.USER);
         }
@@ -9826,7 +9826,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var TOOLBAR_CONFIG = [[{ header: ['1', '2', '3', false] }], ['bold', 'italic', 'underline', 'link'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']];
+var TOOLBAR_CONFIG = [[{ header: ['1', '2', '3', false] }], ['bold', 'italic', 'underline', 'link'], [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check'}], ['clean']];
 
 var SnowTheme = function (_BaseTheme) {
   _inherits(SnowTheme, _BaseTheme);
