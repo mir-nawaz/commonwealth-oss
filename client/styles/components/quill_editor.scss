@@ -482,8 +482,22 @@
         pointer-events: none;
         position: absolute;
     }
+    .ql-editor ul[data-checked=true], .ql-editor ul[data-checked=false] {
+        pointer-events: none;
+    }
+    .ql-editor ul[data-checked=true] > li::before, .ql-editor ul[data-checked=false] > li::before {
+        color: #777;
+        cursor: pointer;
+        pointer-events: all;
+    }
     .ql-editor ul[data-checked="true"] li {
         text-decoration: line-through;
+    }
+    .ql-editor ul[data-checked=true] > li::before {
+        content: '\2611';
+    }
+    .ql-editor ul[data-checked=false] > li::before {
+        content: '\2610';
     }
     .ql-snow.ql-toolbar:after,
     .ql-snow .ql-toolbar:after {
