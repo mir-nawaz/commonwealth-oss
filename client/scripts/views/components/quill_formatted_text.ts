@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import 'components/quill_formatted_text.scss';
 
 import { default as $ } from 'jquery';
@@ -61,6 +62,9 @@ const preprocessQuillDeltaForRendering = (nodes) => {
                  && parent.attributes['code-block'] && result[result.length - 1].attributes['code-block']) {
         parent.children.push({ insert: node.insert });
         result[result.length - 1].children = result[result.length - 1].children.concat(parent.children);
+      // } else if (parent.attributes?.list === 'checked' || parent.attributes?.list === 'unchecked') {
+      //   parent.children.push({ insert: node.insert, attributes: parent.attributes['list'] });
+      //   result.push(parent);
       } else {
         parent.children.push({ insert: node.insert });
         result.push(parent);
@@ -130,7 +134,9 @@ const renderQuillDelta = (delta, hideFormatting = false) => {
         ? 'ul'
         : group.listtype === 'ordered'
           ? 'ol'
-          : 'div';
+          : group.listtype === 'checked' || group.listtype === 'unchecked'
+            ? 'ul.checklist'
+            : 'div';
       return m(groupTag, group.parents.map((parent) => {
         // render empty parent nodes as .between-paragraphs
         if (!parent.attributes && parent.children.length === 1 && parent.children[0].insert === '\n') {
@@ -195,6 +201,7 @@ const renderQuillDelta = (delta, hideFormatting = false) => {
           } else {
             result = m('span', child.insert?.toString());
           }
+          const c = child;
           Object.entries(child.attributes || {}).map(([k, v]) => {
             if ((k !== 'color' && k !== 'background') && v !== true) return;
             switch (k) {
@@ -218,8 +225,10 @@ const renderQuillDelta = (delta, hideFormatting = false) => {
                     : parent.attributes && parent.attributes.header === 5 ? 'h5'
                       : parent.attributes && parent.attributes.header === 6 ? 'h6'
                         : parent.attributes && parent.attributes.list === 'bullet' ? 'li'
-                          : parent.attributes && parent.attributes.list === 'ordered' ? 'li'
-                            : 'div',
+                          : parent.attributes && parent.attributes.list === 'checked' ? 'li.checked'
+                            : parent.attributes && parent.attributes.list === 'unchecked' ? 'li.unchecked'
+                              : parent.attributes && parent.attributes.list === 'ordered' ? 'li'
+                                : 'div',
         children);
       }));
     });
