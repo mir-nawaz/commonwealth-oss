@@ -543,7 +543,8 @@ const instantiateEditor = (
     modules: {
       toolbar: hasFormats ? ([[{ header: 1 }, { header: 2 }]] as any).concat([
         ['bold', 'italic', 'strike', 'code-block'],
-        [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }, 'blockquote', 'link', 'image'],
+        [{ list: 'ordered' }, { list: 'bullet' }, { list: 'unchecked' }],
+        ['blockquote', 'link', 'image'],
         ['preview'],
       ]) : false,
       imageDropAndPaste: {
@@ -636,11 +637,11 @@ const instantiateEditor = (
         // If there is a selection, insert (newline + fmt) before the selection
         // Then set the selection at the end of the line
         quill.setText(
-          text.slice(0, index) +
-            addFmt(fmt, text.slice(index, index + length)) + text.slice(index + length).trimRight()
+          text.slice(0, index)
+            + addFmt(fmt, text.slice(index, index + length)) + text.slice(index + length).trimRight()
         );
-        quill.setSelection(text.slice(0, index).length +
-                           addFmt(fmt, text.slice(index, index + length)).length);
+        quill.setSelection(text.slice(0, index).length
+                           + addFmt(fmt, text.slice(index, index + length)).length);
       } else {
         // If there is no selection, backtrack to the beginning of the current line
         // Then insert the current line, formatted using the block formatter
@@ -666,7 +667,7 @@ const instantiateEditor = (
   makeMarkdownToolbarHandler('header', { 1: '# ', 2: '## ' });
   makeMarkdownToolbarHandler('blockquote', '> ');
   // Todo: look into [x] vs [ ]
-  makeMarkdownToolbarHandler('list', { ordered: ((index) => `${index + 1}. `), bullet: '- ', check: '[ ]' });
+  makeMarkdownToolbarHandler('list', { ordered: ((index) => `${index + 1}. `), bullet: '- ', checked: '[x]', unchecked: '[ ]' });
 
   // Set up remaining couple of Markdown toolbar options
   const defaultLinkHandler = quill.theme.modules.toolbar.handlers.link;
@@ -830,6 +831,19 @@ const QuillEditor: m.Component<IQuillEditorAttrs, IQuillEditorState> = {
           vnode.state.markdownMode = false;
         }
         if (tabindex) setTabIndex(tabindex);
+        const toolbarChecklistIcon = Array.from(document.getElementsByClassName('ql-list')).filter((ele) => (ele as HTMLButtonElement).value === 'unchecked')[0];
+        if (toolbarChecklistIcon) {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = `<svg class="" viewbox="0 0 18 18">
+            <line class="ql-stroke" x1="9" x2="15" y1="4" y2="4"></line>
+            <polyline class="ql-stroke" points="3 4 4 5 6 3"></polyline>
+            <line class="ql-stroke" x1="9" x2="15" y1="14" y2="14"></line>
+            <polyline class="ql-stroke" points="3 14 4 15 6 13"></polyline>
+            <line class="ql-stroke" x1="9" x2="15" y1="9" y2="9"></line>
+            <polyline class="ql-stroke" points="3 9 4 10 6 8"></polyline>
+          </svg>`;
+          toolbarChecklistIcon.appendChild(wrapper.firstChild);
+        }
         oncreateBind(vnode.state);
       },
     }, [
