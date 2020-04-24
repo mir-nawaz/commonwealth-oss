@@ -14,6 +14,7 @@ import PreviewModal from 'views/modals/preview_modal';
 import { detectURL } from 'views/pages/threads/index';
 import SettingsController from 'controllers/app/settings';
 import { Profile, RolePermission } from 'models';
+import Toolbar from 'lib/toolbar';
 import { loadScript } from '../../helpers';
 import User from './widgets/user';
 
@@ -543,7 +544,7 @@ const instantiateEditor = (
     modules: {
       toolbar: hasFormats ? ([[{ header: 1 }, { header: 2 }]] as any).concat([
         ['bold', 'italic', 'strike', 'code-block'],
-        [{ list: 'ordered' }, { list: 'bullet' }, { list: 'unchecked' }],
+        [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
         ['blockquote', 'link', 'image'],
         ['preview'],
       ]) : false,
@@ -576,9 +577,6 @@ const instantiateEditor = (
     theme,
   });
 
-  // Set up toolbar
-  const toolbar = quill.getModule('toolbar');
-
   // Helper function to add formatting around multiline text blocks
   // Special cases:
   // - string formatters with newlines are always applied around the whole block (e.g. ```)
@@ -603,7 +601,7 @@ const instantiateEditor = (
   };
 
   const makeMarkdownToolbarHandlerInline = (handler, fmt) => {
-    toolbar.addHandler(handler, (value) => {
+    Toolbar.addHandler(handler, (value) => {
       if (!isMarkdownMode()) return quill.format(handler, value);
       const { index, length } = quill.getSelection();
       const text = quill.getText();
@@ -627,7 +625,7 @@ const instantiateEditor = (
   makeMarkdownToolbarHandlerInline('code-block', '\n```\n');
 
   const makeMarkdownToolbarHandler = (handler, fmtOption) => {
-    toolbar.addHandler(handler, (value) => {
+    Toolbar.addHandler(handler, (value) => {
       if (!isMarkdownMode()) return quill.format(handler, value);
 
       const { index, length } = quill.getSelection();
@@ -662,16 +660,15 @@ const instantiateEditor = (
         quill.setText(result);
         quill.setSelection(textBefore.length + formattedLine.length - 1);
       }
-    });
+    });'link'
   };
   makeMarkdownToolbarHandler('header', { 1: '# ', 2: '## ' });
   makeMarkdownToolbarHandler('blockquote', '> ');
-  // Todo: look into [x] vs [ ]
   makeMarkdownToolbarHandler('list', { ordered: ((index) => `${index + 1}. `), bullet: '- ', checked: '[x]', unchecked: '[ ]' });
 
   // Set up remaining couple of Markdown toolbar options
-  const defaultLinkHandler = quill.theme.modules.toolbar.handlers.link;
-  toolbar.addHandler('link', (value) => {
+  const defaultLinkHandler = Toolbar.DEFAULTS.handlers.link;
+  Toolbar.addHandler('link', (value) => {
     if (!isMarkdownMode()) return defaultLinkHandler.call({ quill }, value);
 
     const { index, length } = quill.getSelection();
