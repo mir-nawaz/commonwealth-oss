@@ -78,7 +78,8 @@ module.exports = {
         test: /\.(js)$/,
         include: [
           path.resolve(__dirname, '../client'),
-          path.resolve(__dirname, '../shared')
+          path.resolve(__dirname, '../shared'),
+          path.resolve(__dirname, '../node_modules/quill')
         ],
         use: {
           loader: 'babel-loader'

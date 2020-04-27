@@ -21,10 +21,11 @@
     "./client",
     "./client/scripts",
     "./shared/adapters",
-    "./test"
+    "./test",
+    "./node_modules/quill/core"
   ],
   "exclude": [
-    "./node_modules",
+    // "./node_modules",
     "client/scripts/controllers/chain/ethereum/contracts/*"
   ]
 }

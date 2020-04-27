@@ -4,7 +4,6 @@ import Delta from 'quill-delta';
 import { EmbedBlot, Scope } from 'parchment';
 import Quill from 'quill/core/quill';
 import logger from 'quill/core/logger';
-import Module from 'quill/core/module';
 
 const debug = logger('quill:toolbar');
 
@@ -13,9 +12,10 @@ const formatLookup = {
   checked: 'check',
 };
 
-class Toolbar extends Module {
+class Toolbar {
   constructor(quill, options) {
-    super(quill, options);
+    this.quill = quill;
+    this.options = options;
     if (Array.isArray(this.options.container)) {
       const container = document.createElement('div');
       addControls(container, this.options.container);
@@ -52,6 +52,7 @@ class Toolbar extends Module {
   }
 
   addHandler(format, handler) {
+    debugger
     this.handlers[format] = handler;
   }
 

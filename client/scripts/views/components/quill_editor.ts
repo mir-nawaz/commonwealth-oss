@@ -14,7 +14,7 @@ import PreviewModal from 'views/modals/preview_modal';
 import { detectURL } from 'views/pages/threads/index';
 import SettingsController from 'controllers/app/settings';
 import { Profile, RolePermission } from 'models';
-import Toolbar from 'lib/toolbar';
+// import Toolbar from 'lib/toolbar';
 import { loadScript } from '../../helpers';
 import User from './widgets/user';
 
@@ -41,6 +41,7 @@ const instantiateEditor = (
   const Delta = Quill.import('delta');
   const Keyboard = Quill.import('modules/keyboard');
   const Clipboard = Quill.import('modules/clipboard');
+  const Module = Quill.import('core/module');
 
   // Remove existing editor, if there is one
   $editor.empty();
@@ -54,6 +55,9 @@ const instantiateEditor = (
 
   // Register markdown shortcuts
   Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
+
+  // // Register custom toolbar
+  // Quill.register('modules/customToolbar', Toolbar);
 
   const insertEmbeds = (text, quill) => {
     const twitterRe = /^(?:http[s]?:\/\/)?(?:www[.])?twitter[.]com\/.+?\/status\/(\d+)$/;
@@ -309,7 +313,7 @@ const instantiateEditor = (
           case '*':
             value = 'bullet';
             break;
-          case '[]':
+          case '[ ]':
             value = 'unchecked';
             break;
           case '[x]':
@@ -542,6 +546,7 @@ const instantiateEditor = (
   const quill = new Quill($editor[0], {
     debug: 'error',
     modules: {
+      // Note: the seemingly unnecessary concat here ensures a container, & shouldn't be removed
       toolbar: hasFormats ? ([[{ header: 1 }, { header: 2 }]] as any).concat([
         ['bold', 'italic', 'strike', 'code-block'],
         [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
@@ -600,8 +605,10 @@ const instantiateEditor = (
     }).join('\n');
   };
 
+  const toolbar = quill.getModule('toolbar');
+
   const makeMarkdownToolbarHandlerInline = (handler, fmt) => {
-    Toolbar.addHandler(handler, (value) => {
+    toolbar.addHandler(handler, (value) => {
       if (!isMarkdownMode()) return quill.format(handler, value);
       const { index, length } = quill.getSelection();
       const text = quill.getText();
@@ -625,8 +632,19 @@ const instantiateEditor = (
   makeMarkdownToolbarHandlerInline('code-block', '\n```\n');
 
   const makeMarkdownToolbarHandler = (handler, fmtOption) => {
-    Toolbar.addHandler(handler, (value) => {
-      if (!isMarkdownMode()) return quill.format(handler, value);
+    toolbar.addHandler(handler, (value) => {
+      if (!isMarkdownMode()) {
+        const range = this.quill.getSelection();
+        const formats = this.quill.getFormat(range);
+        if (value === 'check') {
+          if (formats['list'] === 'checked' || formats['list'] === 'unchecked') {
+            return quill.format('list', false, Quill.sources.USER);
+          } else {
+            return quill.format('list', 'unchecked', Quill.sources.USER);
+          }
+        }
+        return quill.format(handler, value);
+      }
 
       const { index, length } = quill.getSelection();
       const text = quill.getText();
@@ -660,15 +678,15 @@ const instantiateEditor = (
         quill.setText(result);
         quill.setSelection(textBefore.length + formattedLine.length - 1);
       }
-    });'link'
+    });
   };
   makeMarkdownToolbarHandler('header', { 1: '# ', 2: '## ' });
   makeMarkdownToolbarHandler('blockquote', '> ');
   makeMarkdownToolbarHandler('list', { ordered: ((index) => `${index + 1}. `), bullet: '- ', checked: '[x]', unchecked: '[ ]' });
 
   // Set up remaining couple of Markdown toolbar options
-  const defaultLinkHandler = Toolbar.DEFAULTS.handlers.link;
-  Toolbar.addHandler('link', (value) => {
+  const defaultLinkHandler = toolbar.DEFAULTS.handlers.link;
+  toolbar.addHandler('link', (value) => {
     if (!isMarkdownMode()) return defaultLinkHandler.call({ quill }, value);
 
     const { index, length } = quill.getSelection();
