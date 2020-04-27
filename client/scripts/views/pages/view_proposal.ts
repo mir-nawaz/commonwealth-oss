@@ -950,7 +950,6 @@ const ProposalComments: m.Component<IProposalCommentsAttrs, IProposalCommentsSta
         ]);
       });
     };
-
     const { commentError, comments } = vnode.state;
     return m('.ProposalComments', {
       oncreate: (vnode2) => { vnode.state.dom = vnode2.dom; }

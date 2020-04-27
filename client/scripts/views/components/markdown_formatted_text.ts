@@ -1,3 +1,5 @@
+/* eslint-disable no-regex-spaces */
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-useless-escape */
 import 'components/markdown_formatted_text.scss';
 
@@ -58,11 +60,11 @@ const applyInlineFormatters = (text, hideFormatting) => {
     pattern: '\\[(.+?)\\]\\((.+?)\\)',
     formatter: (captures) => m('a', { target: '_blank', href: captures[1] }, captures[0] || 'Link'),
   }, {
-    pattern: '\\[(https?:\\/\\/[\\w|\\.\\;\\/\\?\\:\\@\\=\\&\\%\\"\\<\\>\\#\\{\\}\\|\\~\\[\\]\\\'\\*\\+\\,\\-\\!]+)\\]',
-    formatter: (captures) => m('img', { src: captures[0] })
-  }, {
     pattern: '(https?:\\/\\/[\\w|\\.\\;\\/\\?\\:\\@\\=\\&\\%\\"\\<\\>\\#\\{\\}\\|\\~\\[\\]\\\'\\*\\+\\,\\-\\!]+)',
     formatter: (captures) => m('a', { target: '_blank', href: captures[0] }, captures[0])
+  }, {
+    pattern: '\\[(https?:\\/\\/[\\w|\\.\\;\\/\\?\\:\\@\\=\\&\\%\\"\\<\\>\\#\\{\\}\\|\\~\\[\\]\\\'\\*\\+\\,\\-\\!]+)\\]',
+    formatter: (captures) => m('img', { src: captures[0] })
   }];
   const regexp = new RegExp(inlineFormatters.map((p) => p.pattern).join('|'), 'g');
 
@@ -140,6 +142,11 @@ function applyBlockFormatters(text, hideFormatting) {
       formatMany: (text) => m('ul', m('ul', m('ul', text))),
       formatOne: (text, match) =>
         m('li', applyInlineFormatters(text.replace(match, ''), hideFormatting)),
+    }, {
+      pattern: /^\[[( x)]\] /,
+      formatMany: (text) => m('ul', m('ul', m('ul', text))),
+      formatOne: (text, match) =>
+        m('li', applyInlineFormatters(text.replace(match, ''), hideFormatting)),
     }];
 
     // Lines which don't match any of the above groups are assigned an
@@ -147,7 +154,7 @@ function applyBlockFormatters(text, hideFormatting) {
     // and will be formatted using `defaultGroup`. See the
     // special-casing code further down.
     const defaultGroup = (children) => {
-      return m((hideFormatting ? 'span' :  'p'), children.map((text) => {
+      return m((hideFormatting ? 'span' : 'p'), children.map((text) => {
         return m((hideFormatting ? 'span' : 'div'), applyInlineFormatters(text, hideFormatting));
       }));
     };
