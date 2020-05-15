@@ -7,7 +7,7 @@ import Subscriber from './subscriber';
 import Poller from './poller';
 import Processor from './processor';
 import { SubstrateBlock, ISubstrateEventData } from './types';
-import { IEventHandler, IBlockSubscriber, IDisconnectedRange, CWEvent } from '../interfaces';
+import { IEventHandler, IEventSubscriber, IDisconnectedRange, CWEvent } from '../interfaces';
 import migrate from './migration';
 
 import { factory, formatFilename } from '../../../server/util/logging';
@@ -59,11 +59,11 @@ export function createApi(provider: WsProvider, isEdgeware: boolean): ApiPromise
 export default async function (
   chain: string,
   url = 'ws://localhost:9944',
-  handlers: IEventHandler[],
+  handlers: IEventHandler<ISubstrateEventData>[],
   skipCatchup: boolean,
   discoverReconnectRange?: () => Promise<IDisconnectedRange>,
   performMigration?: boolean,
-): Promise<IBlockSubscriber<any, SubstrateBlock>> {
+): Promise<IEventSubscriber<any, SubstrateBlock>> {
   const provider = new WsProvider(url);
   await new Promise((resolve) => {
     provider.on('connected', () => resolve());
