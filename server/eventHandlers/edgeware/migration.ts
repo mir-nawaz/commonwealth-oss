@@ -10,6 +10,7 @@ import {
   ISubstrateTreasuryProposalEvents,
   ISubstrateCollectiveProposalEvents,
   ISubstrateSignalingProposalEvents,
+  ISubstrateEventData,
 } from '../../../shared/events/edgeware/types';
 
 import { factory, formatFilename } from '../../util/logging';
@@ -27,7 +28,7 @@ export default class extends IEventHandler {
    * Handles an event during the migration process, by creating or updating existing
    * events depending whether we've seen them before.
    */
-  public async handle(event: CWEvent) {
+  public async handle(event: CWEvent<ISubstrateEventData>) {
     // case by entity type to determine what value to look for
     const createOrUpdateModel = async (fieldName, fieldValue) => {
       const dbEventType = await this._models.ChainEventType.findOne({ where: {

@@ -25,12 +25,16 @@ import {
   ISubstrateSignalingCommitStarted,
   ISubstrateSignalingVotingStarted,
   ISubstrateSignalingVotingCompleted,
+  ISubstrateEventData,
 } from './types';
 
 import { factory, formatFilename } from '../../../server/util/logging';
 const log = factory.getLogger(formatFilename(__filename));
 
-async function fetchDemocracyProposals(api: ApiPromise, blockNumber: number): Promise<CWEvent[]> {
+async function fetchDemocracyProposals(
+  api: ApiPromise,
+  blockNumber: number,
+): Promise<CWEvent<ISubstrateEventData>[]> {
   log.info('Migrating democracy proposals...');
   const publicProps = await api.query.democracy.publicProps();
   const deposits: Array<Option<[BalanceOf, Vec<AccountId>] & Codec>> = await api.queryMulti(
@@ -53,7 +57,10 @@ async function fetchDemocracyProposals(api: ApiPromise, blockNumber: number): Pr
   return proposedEvents.map((data) => ({ blockNumber, data }));
 }
 
-async function fetchDemocracyReferenda(api: ApiPromise, blockNumber: number): Promise<CWEvent[]> {
+async function fetchDemocracyReferenda(
+  api: ApiPromise,
+  blockNumber: number,
+): Promise<CWEvent<ISubstrateEventData>[]> {
   log.info('Migrating democracy referenda...');
   const activeReferenda = await api.derive.democracy.referendumsActive();
   const startEvents = activeReferenda.map((r) => {
@@ -91,7 +98,10 @@ async function fetchDemocracyReferenda(api: ApiPromise, blockNumber: number): Pr
 }
 
 // must pass proposal hashes found in prior events
-async function fetchDemocracyPreimages(api: ApiPromise, hashes: string[]): Promise<CWEvent[]> {
+async function fetchDemocracyPreimages(
+  api: ApiPromise,
+  hashes: string[],
+): Promise<CWEvent<ISubstrateEventData>[]> {
   log.info('Migrating preimages...');
   const hashCodecs = hashes.map((hash) => api.createType('Hash', hash));
   const preimages = await api.derive.democracy.preimages(hashCodecs);
@@ -116,7 +126,10 @@ async function fetchDemocracyPreimages(api: ApiPromise, hashes: string[]): Promi
   return cwEvents;
 }
 
-async function fetchTreasuryProposals(api: ApiPromise, blockNumber: number): Promise<CWEvent[]> {
+async function fetchTreasuryProposals(
+  api: ApiPromise,
+  blockNumber: number,
+): Promise<CWEvent<ISubstrateEventData>[]> {
   log.info('Migrating treasury proposals...');
   const proposals = await api.derive.treasury.proposals();
   const proposedEvents = proposals.proposals.map((p) => {
@@ -133,14 +146,20 @@ async function fetchTreasuryProposals(api: ApiPromise, blockNumber: number): Pro
   return proposedEvents.map((data) => ({ blockNumber, data }));
 }
 
-async function fetchCollectiveProposals(api: ApiPromise, blockNumber: number): Promise<CWEvent[]> {
+async function fetchCollectiveProposals(
+  api: ApiPromise,
+  blockNumber: number,
+): Promise<CWEvent<ISubstrateEventData>[]> {
   log.info('Migrating collective proposals...');
   const councilProposals = await api.derive.council.proposals();
   let technicalCommitteeProposals = [];
   if (api.query.technicalCommittee) {
     technicalCommitteeProposals = await api.derive.technicalCommittee.proposals();
   }
-  const constructEvents = (ps: DeriveCollectiveProposal[], name: 'council' | 'technicalCommittee') => ps
+  const constructEvents = (
+    ps: DeriveCollectiveProposal[],
+    name: 'council' | 'technicalCommittee',
+  ) => ps
     .filter((p) => p.proposal && p.votes)
     .map((p) => {
       return {
@@ -167,7 +186,10 @@ async function fetchCollectiveProposals(api: ApiPromise, blockNumber: number): P
   return proposedEvents.map((data) => ({ blockNumber, data }));
 }
 
-async function fetchSignalingProposals(api: ApiPromise, blockNumber: number): Promise<CWEvent[]> {
+async function fetchSignalingProposals(
+  api: ApiPromise,
+  blockNumber: number,
+): Promise<CWEvent<ISubstrateEventData>[]> {
   log.info('Migrating signaling proposals...');
   if (!api.query.voting || !api.query.signaling) {
     log.info('Found no signaling proposals (wrong chain)!');
@@ -254,7 +276,7 @@ async function fetchSignalingProposals(api: ApiPromise, blockNumber: number): Pr
 
 export default async function (
   api: ApiPromise
-): Promise<CWEvent[]> {
+): Promise<CWEvent<ISubstrateEventData>[]> {
   const blockNumber = +(await api.rpc.chain.getHeader()).number;
 
   /** democracy proposals */
